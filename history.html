@@ -6,36 +6,69 @@
     <title>Archive | SOTD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @font-face { font-family: 'Chantel'; src: url('fonts/chantel.ttf'); }
-        body { background-color: #f3e5ab; font-family: 'Chantel', sans-serif; }
-        .uppercase-text { text-transform: uppercase; letter-spacing: 0.1em; }
+        @font-face { 
+            font-family: 'Chantel'; 
+            src: url('fonts/Chantal_Medium.otf'); 
+        }
+        body { background-color: #ffe6c1; font-family: 'Chantel', sans-serif; color: black; }
+        .uppercase-text { text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 </head>
 <body class="p-6">
-    <nav class="max-w-6xl mx-auto mb-16 text-center">
-        <h1 class="text-4xl font-black uppercase-text">ARCHIVE</h1>
-        <a href="index.html" class="text-xs border-b border-black uppercase-text">BACK</a>
+    <nav class="max-w-6xl mx-auto mb-10 text-center relative">
+        <h1 class="text-4xl uppercase-text mb-2">ARCHIVE</h1>
+        <a href="index.html" class="text-xs border-b border-black uppercase-text pb-0.5 hover:opacity-60 absolute right-0 top-2">BACK</a>
     </nav>
-    <div id="grid" class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16"></div>
+
+    <div id="grid" class="max-w-6xl mx-auto grid grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-8">
+        </div>
+
     <script>
         async function load() {
-            const res = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSvY09mxoHhTuK_V3Ma0xcBRv5wSrvBMX34_rlhnoSiGIztZux5z7TZsvqCHKRbFcSaXG90c3GLU8nN/pub?output=csv');
+            const sheetLink = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSvY09mxoHhTuK_V3Ma0xcBRv5wSrvBMX34_rlhnoSiGIztZux5z7TZsvqCHKRbFcSaXG90c3GLU8nN/pub?output=csv';
+            
+            const res = await fetch(sheetLink);
             const csv = await res.text();
-            const rows = csv.split('\n').slice(1).map(l => l.split(',').map(c => c.replace(/^"|"$/g, '')));
+            
+            // WIX-STYLE CSV PARSER
+            const rows = csv.split(/\r?\n/).map(line => {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                for (let char of line) {
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) {
+                        result.push(current);
+                        current = '';
+                    } else current += char;
+                }
+                result.push(current);
+                return result;
+            });
+
+            const dataRows = rows.slice(1);
             const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
             const container = document.getElementById('grid');
-            rows.filter(r => r[0] && r[3] && r[0] <= today).reverse().forEach(row => {
-                const videoId = row[3].match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)[1];
-                container.innerHTML += `
-                    <div class="text-center uppercase-text">
-                        <p class="text-[10px] mb-4 opacity-60">${row[0]}</p>
-                        <div class="aspect-square rounded-full overflow-hidden border-2 border-black mb-4 shadow-lg">
-                            <img src="https://i.ytimg.com/vi/${videoId}/hqdefault.jpg" class="w-full h-full object-cover">
-                        </div>
-                        <h3 class="font-bold text-lg">${row[1]}</h3>
-                        <p class="text-xs mt-1">- ${row[2]}</p>
-                        <a href="${row[3]}" target="_blank" class="mt-4 inline-block text-[10px] font-bold">LINK</a>
-                    </div>`;
+            
+            dataRows.filter(r => r[0] && r[3] && r[0] <= today).reverse().forEach(row => {
+                let vId = "";
+                const url = row[3];
+                if (url.includes('youtu.be/')) vId = url.split('youtu.be/')[1].split('?')[0];
+                else if (url.includes('v=')) vId = url.split('v=')[1].split('&')[0];
+                else if (url.includes('/embed/')) vId = url.split('/embed/')[1].split('?')[0];
+
+                if (vId) {
+                    container.innerHTML += `
+                        <div class="text-center uppercase-text flex flex-col items-center">
+                            <p class="text-[9px] mb-2 opacity-60 font-bold">${row[0]}</p>
+                            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-black mb-3 shadow-md bg-black">
+                                <img src="https://i.ytimg.com/vi/${vId}/hqdefault.jpg" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition">
+                            </div>
+                            <h3 class="text-sm leading-tight mb-1 truncate w-full">${row[1]}</h3>
+                            <p class="text-[10px] mb-2 truncate w-full">- ${row[2]}</p>
+                            <a href="${row[3]}" target="_blank" class="text-[9px] border-b border-black pb-0.5 font-bold hover:opacity-60">LINK</a>
+                        </div>`;
+                }
             });
         }
         load();
