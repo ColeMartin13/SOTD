@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOTD | Today</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @font-face { font-family: 'Chantel'; src: url('fonts/chantel.ttf'); }
+        body { background-color: #f3e5ab; font-family: 'Chantel', sans-serif; margin: 0; }
+        .uppercase-text { text-transform: uppercase; letter-spacing: 0.15em; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="p-6 flex justify-between items-center max-w-6xl mx-auto w-full">
+        <h1 class="text-3xl font-bold uppercase-text">SOTD</h1>
+        <button onclick="toggleModal()" class="bg-black text-[#f3e5ab] px-8 py-2 rounded-lg font-bold uppercase-text hover:opacity-80">SUBSCRIBE</button>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center px-4 py-10">
+        <div class="text-center uppercase-text mb-8">
+            <h2 id="song-name" class="text-4xl md:text-6xl font-black mb-1">LOADING...</h2>
+            <p id="date" class="text-sm opacity-70 mb-2"></p>
+            <p id="artist-name" class="text-xl md:text-2xl">- </p>
+        </div>
+        <div class="w-full max-w-3xl aspect-video bg-black shadow-2xl overflow-hidden rounded-sm border-2 border-black">
+            <iframe id="yt-player" class="w-full h-full" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+        </div>
+    </main>
+
+    <footer class="p-10 text-center uppercase-text space-y-6">
+        <p class="text-lg font-bold">FOLLOW ME @NBAWDEN12</p>
+        <div class="pt-10 border-t border-black/10">
+            <a href="history.html" class="border-b border-black pb-1 hover:opacity-50">ARCHIVE</a>
+        </div>
+    </footer>
+
+    <div id="sub-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-[#f3e5ab] p-6 max-w-md w-full relative rounded-lg text-center uppercase-text shadow-2xl">
+            <button onclick="toggleModal()" class="absolute top-2 right-4 text-2xl">✕</button>
+            <h2 class="text-2xl font-bold mb-4">JOIN THE LIST</h2>
+            <iframe src="https://07239e97.sibforms.com/serve/MUIFABQnAn8U4F2of0x_BrqzKaob9NT6VXUXMsG0JiCGlRYzgURMzLz_XNEI03AwyD5Hi0DBhIaELsK4j0rIkuWm1WVuh0ZT-ApmEyeAcIVYfmYm23RzGic81PMEkGRmZf-Q9G-dpGmjq0oZqbwCvAw99SzQjO7NxjtwW0ewKzlR5TgRR8EN_GSIOQmX0XRp1qG6RvyrSDuW0xe_dg==" width="100%" height="450px" frameborder="0" scrolling="no"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal() { document.getElementById('sub-modal').classList.toggle('hidden'); }
+        async function init() {
+            const res = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSvY09mxoHhTuK_V3Ma0xcBRv5wSrvBMX34_rlhnoSiGIztZux5z7TZsvqCHKRbFcSaXG90c3GLU8nN/pub?output=csv');
+            const csv = await res.text();
+            const rows = csv.split('\n').map(l => l.split(',').map(c => c.replace(/^"|"$/g, '')));
+            const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Toronto' });
+            let match = rows.find(r => r[0].includes(today)) || rows[rows.length - 1];
+            const vId = match[3].match(/(?:v=|\/)([0-9A-Za-z_-]{11})/)[1];
+            document.getElementById('yt-player').src = `https://www.youtube.com/embed/${vId}?autoplay=1&mute=1`;
+            document.getElementById('song-name').innerText = match[1].toUpperCase();
+            document.getElementById('date').innerText = match[0];
+            document.getElementById('artist-name').innerText = "- " + match[2].toUpperCase();
+        }
+        init();
+    </script>
+</body>
+</html>
