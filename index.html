@@ -9,8 +9,8 @@
     <style>
         @font-face { 
             font-family: 'Chantel'; 
-            /* Your exact file path */
-            src: url('fonts/Chantal_Medium.otf'); 
+            /* FIXED: Looking for file in the same folder, not subfolder */
+            src: url('Chantal_Medium.otf'); 
         }
         body { 
             background-color: #ffe6c1; 
@@ -58,7 +58,6 @@
             <a href="https://music.youtube.com/playlist?list=PLKVW_rYd51r6iejJlIIflJe6Lj6CR3x2c&si=TSLcj0kUcan0I_W5" target="_blank" class="bg-[#ffe6c1] text-black px-8 py-3 rounded-lg text-lg min-w-[200px] font-bold">
                 YouTube Music
             </a>
-            
             <div class="flex gap-8 text-3xl">
                 <a href="https://music.youtube.com/@ColeMartin13" target="_blank" class="hover:text-white"><i class="fab fa-youtube"></i></a>
                 <a href="https://www.instagram.com/nbawden12" target="_blank" class="hover:text-white"><i class="fab fa-instagram"></i></a>
@@ -92,7 +91,6 @@
                 if (!res.ok) throw new Error("Connection failed");
                 const csv = await res.text();
                 
-                // WIX-STYLE CSV PARSER
                 const rows = csv.split(/\r?\n/).map(line => {
                     const result = [];
                     let current = '';
